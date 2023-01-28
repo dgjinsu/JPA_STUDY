@@ -25,10 +25,16 @@ public class OrderApiController {
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
 
-    //안 쓰는 버전이기 때문에 코드 완성 안 할거임.
+    //OSIV 를 껐을 때 order.getMember() 지연 로딩이 되지 않기 때문에 예외가 터짐
     @GetMapping("/api/v1/orders")
     public List<Order> orderV1() {
         List<Order> all = orderRepository.findAllByString(new OrderSearch());
+        for (Order order : all) {
+            order.getMember().getName();
+            order.getDelivery().getAddress();
+            List<OrderItem> orderItems = order.getOrderItems();
+            orderItems.stream().forEach(o -> o.getItem().getName());
+        }
         return all;
     }
 

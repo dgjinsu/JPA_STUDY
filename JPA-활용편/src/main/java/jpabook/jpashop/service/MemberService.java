@@ -18,7 +18,7 @@ public class MemberService {
     //회원가입
     @Transactional
     public Long join(Member member) {
-        //w중복회원 검증
+        //중복회원 검증
         validateDuplicateMember(member);
         memberRepository.save(member);
         return member.getId();
@@ -37,12 +37,12 @@ public class MemberService {
     }
 
     public Member findOne(Long memberId) {
-        return memberRepository.findOne(memberId);
+        return memberRepository.findById(memberId).get();
     }
 
     @Transactional
     public void update(Long id, String name) {
-        Member member = memberRepository.findOne(id);
+        Member member = memberRepository.findById(id).get();
         member.setName(name); // 변경감지에 의한 update
     }
 }

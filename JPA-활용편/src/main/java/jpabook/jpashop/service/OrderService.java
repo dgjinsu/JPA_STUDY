@@ -33,7 +33,7 @@ public class OrderService {
         //cascade 는 완전 종속적인 경우에만 사용. ex) delivery, OrderItem 은 order 에만 의존
 
         //엔티티 조회
-        Member member = memberRepository.findOne(memberId);
+        Member member = memberRepository.findById(memberId).get();
         Item item = itemRepository.findOne(itemId);
 
         //배송정보 생성
@@ -64,7 +64,7 @@ public class OrderService {
      * 주문 검색
      */
     public List<Order> findOrders(OrderSearch orderSearch) {
-        return orderRepository.findAllByString(orderSearch);
+        return orderRepository.findAll(orderSearch);
     }
 }
 

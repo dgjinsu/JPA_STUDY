@@ -1,11 +1,9 @@
 package study.datajpa.entity;
 
 import lombok.Getter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @MappedSuperclass //컬럼을 자식으로 내리는 어노테이션

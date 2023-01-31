@@ -45,4 +45,11 @@ class MemberTest {
         }
     }
 
+    @Test
+    public void JpaEventBaseEntity() {
+        
+    }
+
+
+
 }

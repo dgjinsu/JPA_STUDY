@@ -30,12 +30,6 @@ public class MemberController {
         return member.getUsername();
     }
 
-    @PostConstruct
-    public void init() {
-        for (int i = 0; i < 100; i++) {
-            memberRepository.save(new Member("user" + i, i));
-        }
-    }
 
     @GetMapping("/members")
     public Page<MemberDto> list(@PageableDefault(size = 12, sort = "username", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -43,5 +37,12 @@ public class MemberController {
         Page<Member> page = memberRepository.findAll(pageable);
         Page<MemberDto> pageDto = page.map(member -> new MemberDto(member));
         return pageDto;
+    }
+
+//    @PostConstruct
+    public void init() {
+        for (int i = 0; i < 100; i++) {
+            memberRepository.save(new Member("user" + i, i));
+        }
     }
 }

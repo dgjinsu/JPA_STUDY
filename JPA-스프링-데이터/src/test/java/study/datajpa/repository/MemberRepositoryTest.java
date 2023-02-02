@@ -4,10 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
@@ -28,8 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Rollback(value = false)   // 스프링에서 테스트 코드는 db에 아무 쿼리도 보내지 않음. 쿼리를 보고 싶으면 rollback 을 false 로 하면 보임
 class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
-    @Autowired TeamRepository teamRepository;
+    @Autowired
+    MemberRepository memberRepository;
+    @Autowired
+    TeamRepository teamRepository;
     @PersistenceContext
     EntityManager em;
 
@@ -154,7 +153,7 @@ class MemberRepositoryTest {
         memberRepository.save(m1);
         memberRepository.save(m2);
 
-        List<Member> result1= memberRepository.findListByUsername("AAA"); // List 는 데이터가 없어도 null 반환 X
+        List<Member> result1 = memberRepository.findListByUsername("AAA"); // List 는 데이터가 없어도 null 반환 X
         Member result2 = memberRepository.findMemberByUsername("AAA"); // 데이터 없으면 null
         Optional<Member> result3 = memberRepository.findOptionalByUsername("AAA"); // 데이터 없으면 Optional 로 null 을 감쌈
     }
@@ -187,7 +186,8 @@ class MemberRepositoryTest {
         for (Member member : content) {
             System.out.println("member = " + member);
         }
-        System.out.println("totalElements = " + totalElements);;
+        System.out.println("totalElements = " + totalElements);
+        ;
 
         assertThat(content.size()).isEqualTo(3);
         assertThat(page.getTotalElements()).isEqualTo(5);
@@ -272,5 +272,68 @@ class MemberRepositoryTest {
     @Test
     public void callCustom() {
         List<Member> memberCustom = memberRepository.findMemberCustom();
+    }
+
+
+    @Test
+    public void basic() throws Exception { //given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+        em.persist(new Member("m1", 0, teamA));
+        em.persist(new Member("m2", 0, teamA));
+        em.flush();
+        //when
+        // Probe 생성
+        Member member = new Member("m1");
+        Team team = new Team("teamA");
+        //내부조인으로 teamA 가능
+        member.setTeam(team);
+        //ExampleMatcher 생성, age 프로퍼티는 무시
+        ExampleMatcher matcher = ExampleMatcher.matching().withIgnorePaths("age");
+        Example<Member> example = Example.of(member, matcher);
+        List<Member> result = memberRepository.findAll(example);
+        //then
+         assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void projections() {
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        em.persist(new Member("m1", 0, teamA));
+        em.persist(new Member("m2", 0, teamA));
+
+        em.flush();
+        em.clear();
+
+        //when
+        List<NestedClosedProjections> result = memberRepository.findProjectionByUsername("m1", NestedClosedProjections.class);
+        for (NestedClosedProjections nestedClosedProjections : result) {
+            System.out.println("nestedClosedProjections = " + nestedClosedProjections);
+        }
+    }
+
+    @Test
+    public void nativeQuery() {
+
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        em.persist(new Member("m1", 0, teamA));
+        em.persist(new Member("m2", 0, teamA));
+
+        em.flush();
+        em.clear();
+
+        //when
+
+        Page<MemberProjection> result = memberRepository.findByNativeProjection(PageRequest.of(0, 10));
+        List<MemberProjection> content = result.getContent();
+
+        for (MemberProjection memberProjection : content) {
+            System.out.println("memberProjection.getUsername() = " + memberProjection.getUsername());
+            System.out.println("memberProjection.getTeamName() = " + memberProjection.getTeamName());
+        }
     }
 }

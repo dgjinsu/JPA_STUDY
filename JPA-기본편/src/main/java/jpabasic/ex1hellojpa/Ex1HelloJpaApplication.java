@@ -44,5 +44,5 @@ public class Ex1HelloJpaApplication {
 
 /**
  * 복습 1일차 : ~엔티티 매핑
- * 복습 2일차 : ~
+ * 복습 2일차 : ~프록시
  */

@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
+//@Entity
 @Table(name = "ORDERS")
 @Getter @Setter
 public class Order {

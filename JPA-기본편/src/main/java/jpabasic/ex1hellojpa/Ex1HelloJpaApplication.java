@@ -1,10 +1,8 @@
 package jpabasic.ex1hellojpa;
 
 
-import jpabasic.ex1hellojpa.domain.*;
-import jpabasic.ex1hellojpa.domain2.Address;
-import jpabasic.ex1hellojpa.domain2.AddressEntity;
 import jpabasic.ex1hellojpa.domain2.Member;
+import jpabasic.ex1hellojpa.domain2.Team;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -23,11 +21,23 @@ public class Ex1HelloJpaApplication {
 		ts.begin();
 		try {
 
-			List<Member> result = em.createQuery("select m from Member m where m.name like '%kim%'", Member.class).getResultList();
+			Team team = new Team();
+			team.setName("456");
 
-			for (Member member : result) {
-				System.out.println("member = " + member);
+			Member member = new Member();
+			member.setName("123");
+			member.setTeam(team);
+
+			em.persist(team);
+			em.persist(member);
+
+			List<Member> result = em.createQuery("select m from Member m join m.team t", Member.class).getResultList();
+
+			for (Member member1 : result) {
+				System.out.println("member1 = " + member1);
 			}
+
+
 			ts.commit();
 
 		} catch(Exception e) {

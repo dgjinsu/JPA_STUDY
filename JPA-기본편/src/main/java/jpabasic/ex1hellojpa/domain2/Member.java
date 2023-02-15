@@ -23,6 +23,10 @@ public class Member extends BaseEntity {
     private Long id;
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
+
     @Embedded
     private Address address;
 

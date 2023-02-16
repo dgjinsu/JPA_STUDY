@@ -12,15 +12,20 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
 public class OrderRepository{
 
     private final EntityManager em;
     private final JPAQueryFactory query;  //query dsl 쓰기 위한 코드
+
+    public OrderRepository(EntityManager em) {
+        this.em = em;
+        this.query = new JPAQueryFactory(em);
+    }
 
     public void save(Order order) {
         em.persist(order);

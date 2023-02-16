@@ -19,36 +19,16 @@ import java.util.List;
 import static study.querydsl.entity.QMember.member;
 import static study.querydsl.entity.QTeam.team;
 
-public class MemberRepositoryImpl extends QuerydslRepositorySupport implements MemberRepositoryCustom{
+public class MemberRepositoryImpl implements MemberRepositoryCustom{
 
-//    private final JPAQueryFactory queryFactory;
-//
-//    public MemberRepositoryImpl(EntityManager em) {
-//        this.queryFactory = new JPAQueryFactory(em);
-//    }
+    private final JPAQueryFactory queryFactory;
 
-    public MemberRepositoryImpl(Class<?> domainClass) {
-        super(Member.class);
+    public MemberRepositoryImpl(EntityManager em) {
+        this.queryFactory = new JPAQueryFactory(em);
     }
 
-    public List<MemberTeamDto> search(MemberSearchCondition condition) {
 
-        List<MemberTeamDto> result = from(member)
-                .leftJoin(member.team, team)
-                .where(
-                        usernameEq(condition.getUsername()),
-                        teamNameEq(condition.getTeamName()),
-                        ageGeo(condition.getAgeGoe()),
-                        ageLoe(condition.getAgeLoe())
-                )
-                .select(new QMemberTeamDto(
-                        member.id.as("memberId"),
-                        member.username,
-                        member.age,
-                        team.id.as("teamId"),
-                        team.name.as("teamName")
-                ))
-                .fetch();
+    public List<MemberTeamDto> search(MemberSearchCondition condition) {
 
         return queryFactory
                 .select(new QMemberTeamDto(

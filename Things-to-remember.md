@@ -82,7 +82,9 @@
 
 #### 주요 어노테이션
 `@inheritance` strategy = JOINED(조인전략), SINGLE_TABLE(단일테이블)
+
 `@DiscriminatorColumn` name = ~~   컬럼명 (DTYPE 이 기본)
+
 `@DiscriminatorValue` value = ~~   DTYPE 에 들어갈때 이름 설
 
 

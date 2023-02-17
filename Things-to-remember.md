@@ -3,7 +3,7 @@
 * 엔티티를 영구 저장하는 환경
 * 엔티티 매니저를 통해 접근
 
-> 영속성 컨텍스트의 이점
+ **영속성 컨텍스트의 이점**
 
 * 1차 캐시
   * 조회 시 영속 컨텍스트안에서 1차 캐시를 조회 후 해당 엔티티가 있을 경우 캐시를 조회 해 온다. 엔티티가 없을 경우 데이터베이스에서 조회 해 온다.
@@ -181,3 +181,104 @@
 ## 컨트롤러에서 주의사항
 * 커맨드성 로직들은 Controller에서는 식별자만 넘겨주고, Service단에서 핵심 로직들을 수행하는게 좋다.
 * 트랜잭션 내부에서 관리되고 엔티티들이 영속상태인데, Controller단에서 **엔티티를 파라미터로 받으면, 해당 엔티티는 준영속 상태**가 되기때문에 부작용(sideEffect)를 유도할 수 있다.
+
+## API 개발
+
+### return 할 때
+아래와 같이 한번 감싸주어 반환해야 함. 이렇게 하면 어레이를 반환할 때 다른 데이터도 함께 반환이 되고 향후 필요한 필드를 추가할 수 있다. 
+``` java
+public CreateMemberResponse saveMemberV2(@RequestBody @Valid CreateMemberRequest request){
+        Member member = new Member();
+        member.setName(request.getName());
+        Long id = memberService.join(member);
+
+        return new CreateMemberResponse(id);
+    }
+
+    @Data
+    static class CreateMemberResponse{
+        private Long id;
+
+        public CreateMemberResponse(Long id) {
+            this.id = id;
+        }
+    }
+ ```
+
+## xToOne 에서의 조회
+
+### 엔티티 반환
+* 문제점
+ * 엔티티가 변경되면 API의 스펙이 변한다. 
+ * 엔티티에 API 검증을 위한 로직이 들어간다.(ex: @NotEmpty ...) 
+
+
+### DTO 반환
+* 엔티티와 API 스펙을 명확하게 분리할 수 있다.
+* 엔티티가 변경되어도 API스펙이 변경되지 않는다. 
+
+* 정리 → 실무에서는 API스펙에 엔티티가 노출되어서는 안된다.  
+* 그렇기 때문에 각각에 API에 맞는 DTO를 만들어서 엔티티와 분리시키는게 중요하다.
+* 엔티티를 그대로 쓸 경우의 장점은 아주 조금 간편해진다는 것 뿐이다. 
+
+### 엔티티를 DTO 로 변환
+```java
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> ordersV3(){
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+
+        List<SimpleOrderDto> collect = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+                .collect(Collectors.toList());
+        return collect;
+
+    }
+    @Data
+    static class SimpleOrderDto{
+        private Long orderId;
+        private String name;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+
+        public SimpleOrderDto(Order order){
+            orderId = order.getId();
+            name = order.getMember().getName(); //LAZY 초기화
+            orderDate = order.getOrderDate();
+            orderStatus = order.getStatus();
+            address = order.getDelivery().getAddress(); //LAZY 초기화
+        }
+    }
+```
+
+
+**쿼리 방식 선택 권장 순서**
+1. 우선 엔티티를 DTO로 변환하는 방법을 선택한다.
+2. 필요하면 fetch join으로 성능을 최적화 한다. → 대부분의 성능 이슈 해결
+3. 그래도 안되면 DTO로 직접 조회하는 방법을 사용한다.
+
+## OneToMany 에서의 조회
+
+* oneToMany관계일 때 `distinct`를 사용하지 않으면 row수가 ONE의 갯수가 아닌 Many의 갯수만큼 증가한다. 
+* 그 결과 위 코드에서 distinct를 빼면 Order 엔티티의 조회 수도 증가하게 된다. 
+* JPQL에서 distinct를 사용하게 되면 SQL에 distinct를 추가하고, 더하여 애플리케이션에서 `같은 엔티티중복을 걸러준다`. 
+* 이로써 컬렉션 페치 조인 때문에 중복 조회 되는것을 막을 수 있다. 
+* 하지만.... DB에선 불가능
+
+따라서 페이징시 데이터를 메모리에 다 끌고와 페이징을 한다. 데이터가 커지면 out of memory 예외 발생
+
+### 한계돌파
+* ToOne(OneToOne, ManyToOne) 관계를 모두 페치조인 한다. ToOne관계는 row수를 증가시키지 않으므로 페이징 쿼리에 영향을 주지 않는다.
+* **컬렉션은 지연 로딩**으로 조회한다.
+* 지연 로딩 성능 최적화를 위해 hibernate.default_batch_fetch_sieze , @BatchSize 를 적용한다.
+ * hibernate.default_batch_fetch_size: 글로벌 설정
+ * @BatchSize: 개별 최적화
+* 이 옵션을 사용하면 컬렉션이나, 프록시 객체를 한꺼번에 설정한 size만큼 IN쿼리로 조회한다.
+
+**쿼리 방식 선택 권장 순서**
+1. 엔티티 조회 방식으로 우선 접근
+ a. 페치조인으로 쿼리 수를 최적화
+ b. 컬렉션 최적화
+  * 페이징 필요 hibernate.default_batch_fetch_size , @BatchSize 로 최적화
+  * 페이징 필요 X → 페치 조인 사용
+2. 엔티티 조회 방식으로 해결이 안되면 DTO조회 방식 사용

@@ -282,3 +282,67 @@ public CreateMemberResponse saveMemberV2(@RequestBody @Valid CreateMemberRequest
   * 페이징 필요 hibernate.default_batch_fetch_size , @BatchSize 로 최적화
   * 페이징 필요 X → 페치 조인 사용
 2. 엔티티 조회 방식으로 해결이 안되면 DTO조회 방식 사용
+
+
+## 스프링 데이터
+
+```java
+@Query("select m from Member m where m.username= :username and m.age = :age" ) 
+List<Member> findUser(@Param("username") String username, @Param("age") int age);
+```
+
+* @Query 어노테이션을 사용한다.
+* JPA Named 쿼리처럼 애플리케이션 실행 시점에 문법 오류를 발견할 수 있다.
+
+
+* DTO에 직접 매핑 해주려면 new 명령어를 사용해야 하고, 패키지경로를 모두 작성해줘야 한다.
+```java
+@Query("select new study.datajpa.repository.MemberDto(m.id, m.username, t.name)" +
+       " from Member m join m.team t")
+List<MemberDto> findMemberDto();
+```
+
+* 컬랙션 파라미터 바인딩도 가능하다.
+```java
+@Query("select m from Member m where m.username in :names")
+List<Member> findByNames(@Param("names") List<String> names);
+```
+
+* 벌크성 수정, 삭제 쿼리는 @Modifying 어노테이션을 사용해야 한다.
+
+* @EntityGraph (findAll 같이 메서드 명으로 쿼리를 끝낼때 사용학 편리하다) 
+```java
+@Override
+@EntityGraph(attributePaths = {"team"})
+List<Member> findAll();
+```
+
+### Auditing
+> 보통 솔루션 운용을 할 때 엔티티 생성, 변경할 때 생성(변경)한 시간과 사람이 누군지에 대한 기록은 다 남기는 것이 좋다.
+
+```java
+@EntityListeners(AuditingEntityListener.class)
+@MappedSuperclass
+@Getter
+public class JpaBaseEntity {
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    private LocalDateTime updatedDate;
+}
+```
+* @EntityListeners(AuditingEntityListener.class) 는 엔티티에 적용
+* → 스프링 부트 설정 클래스에 @EnableJpaAuditing 을 적용한다.
+
+
+### 페이징과 정렬
+
+```java
+@RequestMapping(value = "/members_page", method = RequestMethod.GET) 
+public String list(@PageableDefault(size = 12, sort = “username”,direction = Sort.Direction.DESC) Pageable pageable) {
+  ...
+}
+```

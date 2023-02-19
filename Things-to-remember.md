@@ -346,3 +346,176 @@ public String list(@PageableDefault(size = 12, sort = “username”,direction =
   ...
 }
 ```
+
+
+## Querydsl
+
+* JPQL 이 제공하는 모든 검색 조건을 제공
+- member.username.eq("a") : username = 'a'
+- member.username.ne("a") : username ≠ 'a'
+- member.username.eq("a").not() : username ≠ 'a'
+- member.username.isNotNull() : username is not null
+- member.age.in(10,20) : age in (10,20)
+- member.age.notIn(10,20) : age not in(10,20)
+- member.age.between(10,30) : age between 10, 30
+- member.age.goe(30) : age ≥ 30
+- member.age.gt(30) : age > 30
+- member.age.loe(30) : age ≤ 30
+- member.age.lt(30) : age < 30
+- member.username.like("member%") : username like 'member%'
+- member.username.contains("member') : username like '%member%'
+- member.username.startsWith("member") : like 'member%' 
+
+
+### 정렬
+회원 정렬 순서 예
+ * 1. 회원 나이 내림차순(desc)
+ * 2. 회원 이름 올림차순(asc)
+ * 단 2에서 회원 이름이 없으면 마지막에 출력(nulls last)
+```java
+orderBy(member.age.desc(), member.username.asc().nullsLast())
+```
+
+### 집합
+* JPQL이 제공하는 모든 집합 함수를 Querydsl 에서 제공한다.
+
+```java
+List<Tuple> result = queryFactory
+         .select(
+                 member.count(), //회원수
+                 member.age.sum(),//나이 합
+                 member.age.avg(),//나이 평균
+                 member.age.max(),//최대 나이
+                 member.age.min()//최소 나이
+         )
+         .from(member)
+         .fetch();
+
+ Tuple tuple = result.get(0);
+ assertThat(tuple.get(member.count())).isEqualTo(4);
+ assertThat(tuple.get(member.age.sum())).isEqualTo(100);
+ assertThat(tuple.get(member.age.avg())).isEqualTo(25);
+ assertThat(tuple.get(member.age.max())).isEqualTo(40);
+ assertThat(tuple.get(member.age.min())).isEqualTo(10);
+```
+
+### JOIN
+
+* 일반 조인
+```java
+.select(team.name, member.age)
+            .from(member)
+            .join(member.team, team)
+```
+
+* 세타 조인
+```java
+  .select(member, team)
+            .from(member)
+            .leftjoin(member.team, team).on(team.name.eq("teamA"))
+            .fetch();
+```
+
+
+### 서브쿼리
+* `JPAExpressions` 를 사용하여 서브쿼리 사용 가능
+
+ex) 나이가 가장 많은 회원 조회
+```java
+.selectFrom(member)
+            .where(member.age.eq(JPAExpressions
+                    .select(memberSub.age.max())
+                    .from(memberSub)
+            ))
+            .fetch();
+```
+
+### CASE 문
+```java
+    List<String> result = queryFactory
+            .select(member.age
+                    .when(10).then("열살")
+                    .when(20).then("스무살")
+                    .otherwise("기타")
+            )
+            .from(member)
+            .fetch();
+```
+
+## Querydsl 에서 DTO 조회
+
+* 결과를 DTO반환할 때 사용하며 4가지 방법이 존재한다.
+1. 프로퍼티 접근
+2. 필드 직접 접근
+3. 생성자 사용
+4. QueryProjection   (이 방법 권장)
+
+### distinct 사용
+```java
+    List<String> result = queryFactory
+            .select(member.username).distinct()
+```
+
+
+
+### 동적 쿼리 해결
+
+1. BooleanBuilder 
+2. Where 다중 파라미터 사용 (이 방법 권장)
+
+```java
+private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+    return queryFactory
+            .selectFrom(member)
+            .where(usernameEq(usernameCond), ageEq(ageCond))
+            .fetch();
+}
+
+private BooleanExpression usernameEq(String usernameCond) {
+    return usernameCond != null ? member.username.eq(usernameCond):null;
+}
+
+private BooleanExpression ageEq(Integer ageCond) {
+    return ageCond != null ? member.age.eq(ageCond):null;
+}
+```
+
+### 수정, 삭제 벌크연산
+
+* `.fetch()` 대신 `.execute()` 사용
+```java
+long count = queryFactory
+        .update(member)
+        .set(member.username, "비회원")
+        .where(member.age.lt(28))
+        .execute();
+em.flush();
+em.clear();
+```
+* JPQL 배치와 마찬가지로, 영속성 컨텍스트에 있는 엔티티를 무시하고 실행되기 때문에 배치 쿼리를 실행하고 나면 영속성 컨텍스트를 초기화 하는 것이 안전하다.
+
+
+
+### 사용자 정의 Repository
+1. 사용자 정의 인터페이스 작성
+2. 사용자 정의 인터페이스 구현
+3. 스프링 데이터 리포지토리에 사용자 정의 인터페이스 상속
+
+
+### Querydsl 페이징 연동
+
+```java
+public Page<MemberDto> findMemberBySearchCond(MemberSearchCond memberSearchCond, Pageable pageable) {
+
+   List<MemberDto> result = query
+           .select(new QMemberDto(member.name, member.email, member.age))
+           .from(member)
+           .where(
+                   nameEq(memberSearchCond.getName()),
+                   AgeGoe(memberSearchCond.getAge()))
+           .offset(pageable.getOffset())
+           .limit(pageable.getPageSize())
+           .fetch();
+   return new PageImpl<>(result, pageable, result.size());
+}
+```

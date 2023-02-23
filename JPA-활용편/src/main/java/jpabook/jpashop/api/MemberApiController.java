@@ -1,5 +1,6 @@
 package jpabook.jpashop.api;
 
+import io.swagger.annotations.ApiOperation;
 import jpabook.jpashop.entity.Member;
 import jpabook.jpashop.service.MemberService;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ public class MemberApiController {
         return new CreateMemberResponse(id);
     }
 
+    @ApiOperation(value = "멤버 생성", notes = "name 파라미터 필요")
     @PostMapping("/api/v2/members")
     public CreateMemberResponse saveMemberV2(@RequestBody @Valid CreateMemberRequest request) {
         Member member = new Member();

@@ -75,7 +75,6 @@ public class QuerydslBasicTest {
 
     @Test
     public void startQuerydsl() {
-
         Member findMember = queryFactory
                 .select(member)
                 .from(member)

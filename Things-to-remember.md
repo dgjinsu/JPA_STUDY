@@ -519,3 +519,57 @@ public Page<MemberDto> findMemberBySearchCond(MemberSearchCond memberSearchCond,
    return new PageImpl<>(result, pageable, result.size());
 }
 ```
+
+
+
+---------------------------------------------------------------------------------------------
+## API 문서툴
+* Swagger 사용
+
+1. Gradle 추가
+implementation 'io.springfox:springfox-boot-starter:3.0.0'
+implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+
+
+2. 설정 클래스 (스프링 @Configuration 어노테이션 사용)
+* '.basePackage()' 부분에 Swagger를 적용할 패키지 지정. 
+* 해당 패키지 이하의 모든 rest api가 자동으로 swagger 문서로 생성됨. (이하 예시에서는 'com.nahwasa.iot.controller' 패키지 이하를 모두 적용)
+```java
+@Configuration
+@EnableWebMvc
+public class SwaggerConfig {
+
+    private ApiInfo swaggerInfo() {
+        return new ApiInfoBuilder().title("IoT API")
+                .description("IoT API Docs").build();
+    }
+
+    @Bean
+    public Docket swaggerApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .consumes(getConsumeContentTypes())
+                .produces(getProduceContentTypes())
+                .apiInfo(swaggerInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.nahwasa.iot.controller"))
+                .paths(PathSelectors.any())
+                .build()
+                .useDefaultResponseMessages(false);
+    }
+
+    private Set<String> getConsumeContentTypes() {
+        Set<String> consumes = new HashSet<>();
+        consumes.add("application/json;charset=UTF-8");
+        consumes.add("application/x-www-form-urlencoded");
+        return consumes;
+    }
+
+    private Set<String> getProduceContentTypes() {
+        Set<String> produces = new HashSet<>();
+        produces.add("application/json;charset=UTF-8");
+        return produces;
+    }
+}
+```
+* Swagger 문서로 만들고 싶지 않을 경우 (예를들어 테스트용 컨트롤러나 api 작업자에게 보이기 싫은 api 등) 해당 컨트롤러에 @ApiIgnore 어노테이션을 추가하여 제외시킬 수 있음.
+* @ApiOperation(value="멤버 등록", notes="멤버를 등록하고 홈 화면으로 리다이랙트")
+![image](https://user-images.githubusercontent.com/97269799/220830085-bdfab477-9fce-452e-8e0c-6e93cff3cfc6.png)

@@ -70,4 +70,5 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
             countQuery = "SELECT count(*) from member",
             nativeQuery = true)
     Page<MemberProjection> findByNativeProjection(Pageable pageable);
+
 }

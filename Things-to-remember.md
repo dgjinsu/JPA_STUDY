@@ -582,3 +582,10 @@ public class SwaggerConfig {
 4. 각자 브랜치에 push 하기
 5. 메인 브랜치에 pull request 하기
 6. 확인이 되면 merge 하기
+
+## COMMIT 작성법
+
+* type: tytle 형식
+* ex) feat: 회원가입 구현, refactor: 필요 없는 코드 제거
+![image](https://user-images.githubusercontent.com/97269799/221097787-e3e4bcd8-9b9c-4c89-83c0-895c50368d96.png)
+

@@ -165,6 +165,29 @@
 * 컬렉션은 필드에서 초기화 하자.
 * 비즈니스 로직은 엔티티 안에 있는것이 응집도를 높힐 수 있다.(= 객체지향 설계) (ex 상품을 샀다면 재고도 감소하게 엔티티에 로직 작성) 이를 `도메인 모델 패턴` 이라 한다.
 
+### Builder 패턴
+
+* 생성자를 통해 객체를 생성할 때 파라미터가 많으면 가독성이 떨어지고 순서대로 작성해야 함. 또한 파라미터를 2개 받는 생성자, 3개 받는 생성자 등 여러개 만들어야 한다.
+* 하지만 Builder 패턴을 쓰면 위의 모든 불편함이 해결된다.
+```java
+Bag bag = Bag.builder()
+		.name("name")
+        	.money(1000)
+        	.memo("memo")
+            	.letter("This is the letter")
+            	.box("This is the box")
+        	.build();
+```
+
+```java
+@Builder
+public class Bag {
+	private String name;
+        private int money;
+        private STring memo;
+}
+```
+
 ### 서비스 계층 개발시
 * 클래스단에 `@Transactional(readOnly = true)` 을 걸어주고 필요한 곳에 따로 @Transactional 을 써줌 
 

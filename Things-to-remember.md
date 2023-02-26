@@ -597,7 +597,13 @@ public class SwaggerConfig {
 * Swagger 문서로 만들고 싶지 않을 경우 (예를들어 테스트용 컨트롤러나 api 작업자에게 보이기 싫은 api 등) 해당 컨트롤러에 @ApiIgnore 어노테이션을 추가하여 제외시킬 수 있음.
 * @ApiOperation(value="멤버 등록", notes="멤버를 등록하고 홈 화면으로 리다이랙트")
 ![image](https://user-images.githubusercontent.com/97269799/220830085-bdfab477-9fce-452e-8e0c-6e93cff3cfc6.png)
-
+* 추가로 오류가 날 경우 버전이 안 맞을 수 있으니 yml 에 설정 추가
+```java
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+```
 ---------------------------------------------------------------------------------------------
 ## GIT 협업
 1. 팀장이 저장소 만들고 팀원 초대

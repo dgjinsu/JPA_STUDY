@@ -30,7 +30,9 @@ testImplementation 'org.springframework.security:spring-security-test'
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService; // 성공할 때 실행되어야 하는 CustomLoginSuccessHandler 를 빈으로 등록
-    
+
+
+
     /**
      *
      * 스프링 시큐리티 룰을 무시할 URL 규칙 설정
@@ -47,13 +49,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/", "/members/new", "/items", "/login").permitAll() //인증이 없어도 접근 가능
+                .antMatchers("/", "/members/new", "/items", "/login/**").permitAll() //인증이 없어도 접근 가능
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(customLoginSuccessHandler())
-                .failureForwardUrl("/members/new")
+                .failureUrl("/login/error")
+                .failureHandler(failureHandler())
                 .and()
                 .logout()
                 .logoutUrl("/logout");
@@ -72,12 +75,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new CustomLoginSuccessHandler();
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-        //AuthenticationManager 에 등록
-        authenticationManagerBuilder.userDetailsService(userDetailsService);
+    @Bean
+    public AuthenticationFailureHandler failureHandler() {
+        return new CustomAuthFailureHandler();
     }
-  }
+
+//    @Bean
+//    public CustomAuthenticationProvider customAuthenticationProvider() {
+//        // 실제 인증 당담 객체를 빈으로 등록
+//        return new CustomAuthenticationProvider(userDetailsService, bCryptPasswordEncoder());
+//    }
+
+    @Override
+    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+        //AuthenticationManager 에 등록
+        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+    }
+
+}
 ```
 
 * CustomAuthenticationProvider  (이거 없어도 동작 함. 나중에 커스텀 필요하면 공부)
@@ -130,6 +145,45 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
 }
 ```
 
+* CustomAuthFailureHandler
+```java
+@Component
+public class CustomAuthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+
+    private final String DEFAULT_FAILURE_URL = "/login/error";
+
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+        String errorMessage = null;
+
+        //=================================================
+        //< set the error message
+        //=================================================
+        //< incorrect the identify or password
+        if(exception instanceof BadCredentialsException || exception instanceof InternalAuthenticationServiceException) {
+            errorMessage = "아이디나 비밀번호가 맞지 않습니다. 다시 확인해 주십시오.";
+        }
+        //< account is disabled
+        else if(exception instanceof DisabledException) {
+            errorMessage = "계정이 비활성화 되었습니다. 관리자에게 문의하세요.";
+        }
+        //< expired the credential
+        else if(exception instanceof CredentialsExpiredException) {
+            errorMessage = "비밀번호 유효기간이 만료 되었습니다. 관리자에게 문의하세요.";
+        }
+        else {
+            errorMessage = "알수 없는 이유로 로그인에 실패하였습니다. 관리자에게 문의하세요.";
+        }
+
+        // UTF-8 인코딩 처리
+        errorMessage = URLEncoder.encode(errorMessage, "UTF-8");
+        setDefaultFailureUrl("/login/error?msg=" + errorMessage);
+
+        super.onAuthenticationFailure(request, response, exception);
+    }
+}
+```
+
 * UserDetailsServiceImpl
 ```java
 @Service
@@ -161,6 +215,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 * 로그인 실패시 이동할 url 설정을 똑같이 login 으로 하면 뭐 이상한 버그뜸. 팝업 띄웠다가 다시 돌아오는 방식이 좋을듯
 * 커스텀 프로바이더 는 없는게 편한것같음. 나중에 필요하다 싶으면 그때 공부
 * **시큐리티 관련 클래스에 있는 Exception들은 전역예외처리에서 잡히지 않음.** 왜 그런진 모르겠음
+* 인증실패핸들러에서 url 설정할때 한글 꺠짐. UTF 인코딩 필수
+* 로그인 실패했을때 설정 url 도 허가해줘야함. (당연한건데 인지 못했었음..)
 
 
 ### 주의점들

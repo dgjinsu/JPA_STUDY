@@ -2,11 +2,11 @@ package jpabook.jpashop.api;
 
 import io.swagger.annotations.ApiOperation;
 import jpabook.jpashop.entity.Member;
+import jpabook.jpashop.exception.CustomException;
 import jpabook.jpashop.service.MemberService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -18,6 +18,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MemberApiController {
     private final MemberService memberService;
+
+    /**
+     * 예외처리 연습 매핑 메소드
+     */
+    @GetMapping("/exception")
+    public void exceptionTest() throws Exception {
+        throw new Exception("zz");
+    }
+
+    @GetMapping("/exception/stock")
+    public void exceptionTest2() throws CustomException {
+        throw new CustomException("재고 수량 부족이요");
+    }
 
     @PostMapping("/api/v1/members")
     public CreateMemberResponse saveMemberV1(@RequestBody @Valid Member member) {
@@ -54,6 +67,7 @@ public class MemberApiController {
         List<Member> findMembers = memberService.findMembers();
         List<MemberDto> collect = findMembers.stream().map(m -> new MemberDto(m.getName()))
                 .collect(Collectors.toList());
+        System.out.println(collect.size());
 
         return new Result(collect);
     }

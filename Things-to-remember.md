@@ -604,6 +604,11 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 ```
+
+* 스프링 시큐리티와 함께 쓸 경우 추가 설정 필요
+```java
+http.authorizeRequests().antMatchers("/v3/api-docs", "/swagger*/**").permitAll()
+```
 ---------------------------------------------------------------------------------------------
 ## GIT 협업
 1. 팀장이 저장소 만들고 팀원 초대

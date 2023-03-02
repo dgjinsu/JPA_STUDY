@@ -5,6 +5,9 @@ import jpabook.jpashop.entity.Member;
 import jpabook.jpashop.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Request;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,8 +68,14 @@ public class MemberController {
     }
 
     @ResponseBody
-    @GetMapping("/principal")
-    public String principal(Principal principal) {
+    @GetMapping("/principal1")
+    public String principal1(Principal principal) {
+        return principal.getName();
+    }
+    @ResponseBody
+    @GetMapping("/principal2")
+    public String principal2(@AuthenticationPrincipal UserDetails userDetails, Principal principal) {
+        userDetails.getAuthorities();
         return principal.getName();
     }
 

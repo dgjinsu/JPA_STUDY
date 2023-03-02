@@ -69,7 +69,7 @@ public class MemberApiController {
                 .collect(Collectors.toList());
         System.out.println(collect.size());
 
-        return new Result(collect);
+        return new Result(200, "결과반환", collect.get(0));
     }
 
     @Data
@@ -81,6 +81,8 @@ public class MemberApiController {
     @Data
     @AllArgsConstructor
     static class Result<T> {
+        private int code;
+        private String message;
         private T data;
     }
 

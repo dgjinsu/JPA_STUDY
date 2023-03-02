@@ -10,7 +10,11 @@
 //import org.springframework.security.core.AuthenticationException;
 //import org.springframework.security.core.userdetails.UserDetailsService;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//
+
+/**
+ * 로그인 실패 횟수 등 을 구현할 때 사용
+ */
+
 //@Slf4j
 //@RequiredArgsConstructor
 //public class CustomAuthenticationProvider implements AuthenticationProvider {

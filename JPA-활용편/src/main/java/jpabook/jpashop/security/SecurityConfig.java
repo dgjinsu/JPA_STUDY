@@ -20,7 +20,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService; // 성공할 때 실행되어야 하는 CustomLoginSuccessHandler 를 빈으로 등록
+    private final UserDetailsService userDetailsService;
 
 
 
@@ -53,6 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .logoutUrl("/logout");
+
+        //postman 설정  (포스트맨에도 authorization 해줘야 함)
+        http.httpBasic().and();
     }
 
     @Bean

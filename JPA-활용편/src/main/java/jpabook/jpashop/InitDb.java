@@ -2,6 +2,7 @@ package jpabook.jpashop;
 import jpabook.jpashop.entity.*;
 import jpabook.jpashop.entity.item.Book;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +36,12 @@ public class InitDb {
     static class InitService {
 
         private final EntityManager em;
+        private final BCryptPasswordEncoder encoder;
 
         public void dbInit1() {
             System.out.println("Init1" + this.getClass());
             Member member = createMember("userA", "서울", "1", "1111");
+            member.setPassword(encoder.encode("userA"));
             em.persist(member);
 
             Book book1 = createBook("JPA1 BOOK", 10000, 100);
@@ -57,6 +60,7 @@ public class InitDb {
 
         public void dbInit2() {
             Member member = createMember("userB", "진주", "2", "2222");
+            member.setPassword(encoder.encode("userB"));
             em.persist(member);
 
             Book book1 = createBook("SPRING1 BOOK", 20000, 200);

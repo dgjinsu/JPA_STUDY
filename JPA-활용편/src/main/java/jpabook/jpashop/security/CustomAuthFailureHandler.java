@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 
@@ -49,6 +50,9 @@ public class CustomAuthFailureHandler extends SimpleUrlAuthenticationFailureHand
         // UTF-8 인코딩 처리
         errorMessage = URLEncoder.encode(errorMessage, "UTF-8");
         setDefaultFailureUrl("/login/error?msg=" + errorMessage);
+
+
+
 
         super.onAuthenticationFailure(request, response, exception);
 

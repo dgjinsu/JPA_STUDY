@@ -210,6 +210,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 }
 ```
 
+### 로그아웃 메소드
+![image](https://user-images.githubusercontent.com/97269799/221491126-c8754dfb-11ce-414a-adf4-46333b79eef4.png)
+* post 형식으로 전달해야함!
+  * 물론 로그인도 마찬가지
+  * 
+
+### 로그인 사용자의 정보 받아오는 방법들
+- 스프링 시큐리티에선 해당 정보를 SecurityContextHolder 내부의 SecurityContext에 Authentication 객체로 저장해두고 있음
+* Principal 객체 주입 받기
+    * 가장 간단한 방법
+    * 스프링 시큐리티가 제공하는 객체가 아닌 자바에 정의된 객체임. 따라서 getName() 만 사용 가능
+* `@AuthenticationPrincipal` 어노테이션
+    * 가장 권장되는 방식
+    * SecurityContext에 저장된 인증객체를 기반으로 Authentication을 꺼내고 principal을 return 해줌
+
 ### 만들면서 겪었던 에러들
 * UserDetailsService 구현을 원래 있던 Service 클래스에 하면 스프링 빈 등록할 때 꼬임. 따로 만들어줘야 함
 * 로그인 form에서 input안의 name지정을 username, password로 해야 동작함. 따로 설정하려면 http.formLogin().usernameParameter("email") 이런식으로 설정해줘야 함
@@ -227,7 +242,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 * 회원가입시 아이디,비번은 notnull 조건
 * 비밀번호는 bCryptPasswordEncoder 를 통해서 인코딩해서 repo에 저장
 
-### 로그아웃 메소드
-![image](https://user-images.githubusercontent.com/97269799/221491126-c8754dfb-11ce-414a-adf4-46333b79eef4.png)
-* post 형식으로 전달해야함!
-  * 물론 로그인도 마찬가지
+

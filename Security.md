@@ -60,6 +60,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .logoutUrl("/logout");
+                
+        //postman 설정  (포스트맨에도 authorization 해줘야 함)
+        http.httpBasic().and();
     }
 
     @Bean
@@ -217,6 +220,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 * **시큐리티 관련 클래스에 있는 Exception들은 전역예외처리에서 잡히지 않음.** 왜 그런진 모르겠음
 * 인증실패핸들러에서 url 설정할때 한글 꺠짐. UTF 인코딩 필수
 * 로그인 실패했을때 설정 url 도 허가해줘야함. (당연한건데 인지 못했었음..)
+* 포스트맨 사용하기 위해선 별도의 설정 
 
 
 ### 주의점들

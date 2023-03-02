@@ -29,7 +29,7 @@ testImplementation 'org.springframework.security:spring-security-test'
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService; // 성공할 때 실행되어야 하는 CustomLoginSuccessHandler 를 빈으로 등록
+    private final UserDetailsService userDetailsService;
 
 
 
@@ -43,13 +43,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring()
                 .antMatchers("/css/**", "/js/**");
 
+
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/", "/members/new", "/items", "/login/**").permitAll() //인증이 없어도 접근 가능
+                .antMatchers("/", "/members/new", "/items", "/login/**", "/v3/api-docs",
+                        "/swagger*/**").permitAll() //인증이 없어도 접근 가능
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -60,9 +62,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .logoutUrl("/logout");
-                
+
         //postman 설정  (포스트맨에도 authorization 해줘야 함)
         http.httpBasic().and();
+        //cors 설정 (테스트 해보진 않음)
+        http.authorizeRequests().and().cors();
     }
 
     @Bean
@@ -83,6 +87,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new CustomAuthFailureHandler();
     }
 
+    /**
+     * cors 에러 해결 (스프링 시큐리티에서)
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
 //    @Bean
 //    public CustomAuthenticationProvider customAuthenticationProvider() {
 //        // 실제 인증 당담 객체를 빈으로 등록
@@ -94,7 +115,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //AuthenticationManager 에 등록
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
     }
-
 }
 ```
 
@@ -235,7 +255,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 * **시큐리티 관련 클래스에 있는 Exception들은 전역예외처리에서 잡히지 않음.** 왜 그런진 모르겠음
 * 인증실패핸들러에서 url 설정할때 한글 꺠짐. UTF 인코딩 필수
 * 로그인 실패했을때 설정 url 도 허가해줘야함. (당연한건데 인지 못했었음..)
-* 포스트맨 사용하기 위해선 별도의 설정 
+* 포스트맨 사용하기 위해선 별도의 설정 / 추가로 cors 설정도 더 해줘야 
 
 
 ### 주의점들

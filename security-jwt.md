@@ -56,5 +56,5 @@ xxxxx.yyyyy.zzzzz 구조
 ![image](https://user-images.githubusercontent.com/97269799/224692981-56099a8a-24bc-4f5a-9343-ce25e5e8aa7c.png)
 
 
-이 방법으로 하면 서버1 이든 서버2 이든 세션을 검증할 필요가 없어진다 
+이 방법으로 하면 서버1 이든 서버2 이든 세션을 검증할 필요가 없어진다. 
 서버들이 코스라는 시크릿 키만 알고 있으면 된다.

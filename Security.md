@@ -248,6 +248,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 ### 만들면서 겪었던 에러들
 * UserDetailsService 구현을 원래 있던 Service 클래스에 하면 스프링 빈 등록할 때 꼬임. 따로 만들어줘야 함
 * 로그인 form에서 input안의 name지정을 username, password로 해야 동작함. 따로 설정하려면 http.formLogin().usernameParameter("email") 이런식으로 설정해줘야 함
+    * jwt 에선 상관없음. 토큰이기 때문
 * authenticated() 옵션은 인증이 된 유저만 접속 가능하게끔 하는 설정이다. 인증 없어도 접속가능하게끔 하는 설정만 하니 인증 없이도 모든 url이 뚫린다.
 * User.builder() 할 때 roles 값이 비어있으면 안 됨
 * 로그인 실패시 이동할 url 설정을 똑같이 login 으로 하면 뭐 이상한 버그뜸. 팝업 띄웠다가 다시 돌아오는 방식이 좋을듯

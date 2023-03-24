@@ -39,6 +39,8 @@ public class ApiExceptionController {
 에러 시 아래와 같은 응답이 옴 (code, type, message)
 ![image](https://user-images.githubusercontent.com/97269799/221370785-bcbc8318-adf2-4684-a788-f25c9c3b3811.png)
 
+map 보단 resultVo 같은 객체를 반환하는것이 더 좋을듯
+
 
 ## Custom Exception
 

@@ -61,3 +61,8 @@ xxxxx.yyyyy.zzzzz 구조
 
 jwt 프로젝트 끝난 후 추가 
 https://bcp0109.tistory.com/301
+
+
+* jwt 에서 로그아웃은 redis 를 사용하여 로그아웃 처리를 해줘야 한다.
+  * https://wildeveloperetrain.tistory.com/61
+* 추가로 aws 배포할 때 따로 

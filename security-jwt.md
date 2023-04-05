@@ -65,4 +65,6 @@ https://bcp0109.tistory.com/301
 
 * jwt 에서 로그아웃은 redis 를 사용하여 로그아웃 처리를 해줘야 한다.
   * https://wildeveloperetrain.tistory.com/61
-* 추가로 aws 배포할 때 따로 
+* redis 설치
+  * https://inpa.tistory.com/entry/REDIS-%F0%9F%93%9A-Window10-%ED%99%98%EA%B2%BD%EC%97%90-Redis-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0
+* 추가로 aws 배포할 때 따로 작업 필요.

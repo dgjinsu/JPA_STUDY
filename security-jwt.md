@@ -68,3 +68,66 @@ https://bcp0109.tistory.com/301
 * redis 설치
   * https://inpa.tistory.com/entry/REDIS-%F0%9F%93%9A-Window10-%ED%99%98%EA%B2%BD%EC%97%90-Redis-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0
 * 추가로 aws 배포할 때 따로 작업 필요.
+
+### 로그아웃
+* Redis 를 통한 로그아웃 필요
+
+* YML 파일 설정
+![image](https://user-images.githubusercontent.com/97269799/230034822-73952171-1f85-4121-adc4-d556354c622c.png)
+
+* 로그아웃 서비스 구현
+```java
+public ResponseEntity<?> logout(LogoutDto logoutDto) {
+    String token = resolveToken(logoutDto.getAccessToken());
+    if(!tokenProvider.checkToken(token)) {
+        return ResponseEntity.ok(new ResponseData("잘못된 요청입니다.",null));
+    }
+
+    // 2. Access Token 에서 authentication 가져옴
+    Authentication authentication = tokenProvider.getAuthentication(token);
+
+    // 3. 해당 Access Token 유효시간을 갖고 와서 BlackList 로 저장
+    Long expiration = tokenProvider.getExpiration(token);
+    redisTemplate.opsForValue()
+            .set(token, "logout", expiration, TimeUnit.MILLISECONDS);
+    return ResponseEntity.ok(new ResponseData("로그아웃 되었습니다", null));
+}
+
+private String resolveToken(String bearerToken) {
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+        return bearerToken.substring(7);
+    }
+    return null;
+}
+```
+
+* jwtFilter
+![image](https://user-images.githubusercontent.com/97269799/230035507-6725809a-7fbb-435d-ae02-66309c98afdd.png)
+
+* RedisRepositoryConfig (redisTemplate Bean 에 등록)
+```java
+@RequiredArgsConstructor
+@Configuration
+@EnableRedisRepositories
+public class RedisRepositoryConfig {
+    private final RedisProperties redisProperties;
+
+    //lettuce
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        return redisTemplate;
+    }
+}
+```
+
+
+* 컨트롤러에서 /logout 은 요청이 안 됨

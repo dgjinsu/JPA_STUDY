@@ -605,6 +605,50 @@ spring:
       matching-strategy: ant_path_matcher
 ```
 
+* jwt 를 쓸 경우 헤더에 토큰을 추가해야 함. 헤더
+```
+![Uploading image.png…]()
+```java
+@Configuration
+@RequiredArgsConstructor
+public class SwaggerConfig {
+
+    // Swagger 설정
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.OAS_30)
+                // 인증 설정
+                .securityContexts(Arrays.asList(securityContext()))
+                .securitySchemes(Arrays.asList(apiKey()))
+                .select()
+                // API 문서를 생성할 대상 선택
+                .apis(RequestHandlerSelectors.basePackage("linklibrary.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+    // 인증에 대한 정보 생성
+    private SecurityContext securityContext() {
+        return SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .build();
+    }
+
+    // 인증에 대한 정보 설정
+    private List<SecurityReference> defaultAuth() {
+        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return Arrays.asList(new SecurityReference("Authorization", authorizationScopes));
+    }
+
+    // 헤더에 JWT 토큰을 포함하는 ApiKey 객체 생성.
+    private ApiKey apiKey() {
+        return new ApiKey("Authorization", "Authorization", "header");
+    }
+}
+```
+
 * 스프링 시큐리티와 함께 쓸 경우 추가 설정 필요
 ```java
 http.authorizeRequests().antMatchers("/v3/api-docs", "/swagger*/**").permitAll()

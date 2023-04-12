@@ -9,6 +9,8 @@
 * 필드에 cascade = CascadeType.ALL을 붙혀주면 그 필드와 연관된 엔티티를 persist 해주지 않아도 persist한 효과가 나면서 영속성이 된다.
 
 * 하지만 Cascade를 사용하면 편리하긴하지만 주의해야할 점이 있다. 두가지 조건을 만족해야 사용할 수 있다.
+
+
 1.등록 삭제 등 라이프 사이클이 똑같을 때
 
 2.단일 엔티티에 완전히 종속적일때만 사용 가능하다. 
@@ -61,4 +63,6 @@ public class Post extends BaseEntity{
  ```java
  Request processing failed; nested exception is org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a]; constraint [\"FKG6L1YDP1PWKMYJ166TEIUOV1B: PUBLIC.POST FOREIGN KEY(CATEGORY_ID) REFERENCES PUBLIC.CATEGORY(CATEGORY_ID) (CAST(4 AS BIGINT))\"; SQL statement:\ndelete from category where category_id=? [23503-214]]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
 ```
+
+> 결론 : @Query같은 경우 영속성 컨텍스트를 거치지 않고 쿼리가 나가기 때문에 cascade 걸려있는 다른 엔티티들은 외래키 무결성 조건에 위반됨. 또한 무분별한 cascade.ALL 보단 REMOVDE를 먼저 사용하고 필요한 경우에만 ALL 로 바꿔주는게 좋을 것 같음 
 

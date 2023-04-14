@@ -66,3 +66,52 @@ public class Post extends BaseEntity{
 
 > 결론 : @Query같은 경우 영속성 컨텍스트를 거치지 않고 쿼리가 나가기 때문에 cascade 걸려있는 다른 엔티티들은 외래키 무결성 조건에 위반됨. 또한 무분별한 cascade.ALL 보단 REMOVDE를 먼저 사용하고 필요한 경우에만 ALL 로 바꿔주는게 좋을 것 같음 
 
+
+
+### UserDetails 구현체 PrincipalDetails 필드에 Entity를 저장하면 안 되는 이유
+
+```java
+@Getter
+public class PrincipalDetails implements UserDetails {
+
+    private UserDto userDto;
+
+    public PrincipalDetails(UserDto userDto) {
+        this.userDto = userDto;
+    }
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singleton(new SimpleGrantedAuthority(userDto.getRole().toString())); //역할을 문자열로 바꾸어 return
+    }
+
+    @Override
+    public String getPassword() {
+        return userDto.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return userDto.getLoginId();
+    }
+}
+```
+* 위에는 현재 구현되어있는 PrincipalDetails 이다.
+* 이 객체가 어디 쓰이는지부터 알아보자
+    * 로그인 시 받은 Id와 Password 로 부터 UsernamePasswordAuthenticationToken 을 만들고 이를 통해 authentication 을 만든다. 밑은 코드이다
+```java
+UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginFormDto.getLoginId(), loginFormDto.getPassword());
+
+Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+```
+    * authenticate(authenticationToken) 함수가 실행되면 UserDetailsService 인터페이스를 구현하는 loadUserByUsername() 메서드를 호출하여 사용자 정보를 가져온다.
+    * 이때 loadUserByUsername() 함수의 반환 객체는 UserDetails 인터페이스인데 이를 구현한게 PrincipalDetails 이다. 
+    * 그런 후 authentication 을 이용해 만든 토큰을 클라이언트에 반환에 추후에 토큰을 통해 요청을 받을 수 있게 한다.
+
+* 이전의 코드에선 UserDto 대신 UserEntity를 넣어두었다. 실제 많은 블로그, 강의에서 엔티티를 필드로 갖는다.
+* 하지만 이는 보안상의 이유로 실무에선 **절대 사용하지 않는다**
+* 가장 큰 이유는 보안상의 이유이다. User 엔티티의 경우 가족관계, 주민등록번호, 전화번호 등 여러 정보가 있을 수 있다. 이를 PrincipalDetails 에 저장하는건 보안상의 문제가 있다.
+* 따라서 필요한 정보만 뽑아 저장하는 방식으로 로직을 짜야한다. 그래서 나는 DTO를 사용하는 방식으로 바꾸었다.
+

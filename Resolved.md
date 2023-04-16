@@ -125,6 +125,7 @@ Authentication authentication = authenticationManagerBuilder.getObject().authent
 
 * OUTER JOIN(외부 조인)은 두 테이블을 조인할 때, 1개의 테이블에만 데이터가 있어도 결과가 나온다.
     * LEFT OUTER JOIN: 왼쪽 테이블의 모든 값이 출력되는 조인
+        * 만약 category post 를 조회할 때 post의 category가 null이라면 left outer join을 해야한다.
     * RIGHT OUTER JOIN: 오른쪽 테이블의 모든 값이 출력되는 조인
     * FULL OUTER JOIN: 왼쪽 또는 오른쪽 테이블의 모든 값이 출력되는 조인
 
@@ -132,3 +133,7 @@ Authentication authentication = authenticationManagerBuilder.getObject().authent
 
 * Join 시 행이 많은 테이블을 기준으로 데이터가 늘어난다.
     * 4행 join 11행 하면 최대 11행까지 늘어날 수 있음. (내부,외부 조인에서)
+
+* THETA JOIN(세타 조인)
+    * 세타 조인을 통해 연관관계가 없는 엔티티를 조회할 수 있다.
+    * 세타 조인을 하게 되면 각 행과 상대방 테이블의 행을 모두 조인하는 Cartesian product를 수행하게 된다.

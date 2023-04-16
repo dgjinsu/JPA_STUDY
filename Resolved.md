@@ -115,3 +115,20 @@ Authentication authentication = authenticationManagerBuilder.getObject().authent
 * 가장 큰 이유는 보안상의 이유이다. User 엔티티의 경우 가족관계, 주민등록번호, 전화번호 등 여러 정보가 있을 수 있다. 이를 PrincipalDetails 에 저장하는건 보안상의 문제가 있다.
 * 따라서 필요한 정보만 뽑아 저장하는 방식으로 로직을 짜야한다. 그래서 나는 DTO를 사용하는 방식으로 바꾸었다.
 
+
+### JOIN
+* INNER JOIN(내부 조인)은 두 테이블을 조인할 때, 두 테이블에 모두 지정한 열의 데이터가 있어야 한다.
+    * jpql에선 일반 join하면 inner join이 된다.
+
+![image](https://user-images.githubusercontent.com/97269799/232319081-b3383327-f78e-4627-8a91-f7b93be62700.png)
+
+
+* OUTER JOIN(외부 조인)은 두 테이블을 조인할 때, 1개의 테이블에만 데이터가 있어도 결과가 나온다.
+    * LEFT OUTER JOIN: 왼쪽 테이블의 모든 값이 출력되는 조인
+    * RIGHT OUTER JOIN: 오른쪽 테이블의 모든 값이 출력되는 조인
+    * FULL OUTER JOIN: 왼쪽 또는 오른쪽 테이블의 모든 값이 출력되는 조인
+
+![image](https://user-images.githubusercontent.com/97269799/232319032-98166bca-092d-4a30-ab55-5c90abdac7bd.png)
+
+* Join 시 행이 많은 테이블을 기준으로 데이터가 늘어난다.
+    * 4행 join 11행 하면 최대 11행까지 늘어날 수 있음. (내부,외부 조인에서)

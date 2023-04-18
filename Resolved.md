@@ -137,3 +137,39 @@ Authentication authentication = authenticationManagerBuilder.getObject().authent
 * THETA JOIN(세타 조인)
     * 세타 조인을 통해 연관관계가 없는 엔티티를 조회할 수 있다.
     * 세타 조인을 하게 되면 각 행과 상대방 테이블의 행을 모두 조인하는 Cartesian product를 수행하게 된다.
+
+
+### Valid 적용 후 전역으로 에러 잡기
+```java
+    @NotBlank(message = "아이디는 필수 입력 값입니다.")
+    @Pattern(regexp = "^[a-z0-9]{4,20}$", message = "아이디는 영어 소문자와 숫자만 사용하여 4~20자리여야 합니다.")
+    @Schema(title = "사용자 로그인 아이디 요청", example = "abcde1")
+    private String loginId;
+```
+
+* `@NotNull`: 해당 값이 null이 아닌지 검증함
+* `@NotEmpty`: 해당 값이 null이 아니고, 빈 스트링("") 아닌지 검증함(" "은 허용됨)
+* `@NotBlank`: 해당 값이 null이 아니고, 공백(""과 " " 모두 포함)이 아닌지 검증함
+* `@AssertTrue`: 해당 값이 true인지 검증함
+* `@Size`: 해당 값이 주어진 값 사이에 해당하는지 검증함(String, Collection, Map, Array에도 적용 가능)
+* `@Min`: 해당 값이 주어진 값보다 작지 않은지 검증함
+* `@Max`: 해당 값이 주어진 값보다 크지 않은지 검증함
+* `@Pattern`: 해당 값이 주어진 패턴과 일치하는지 검증함
+
+
+> @Valid
+* JSR-303 자바 표준 스펙
+* 특정 ArgumentResolver를 통해 진행되어 컨트롤러 메소드의 유효성 검증만 가능하다.
+* 유효성 검증에 실패할 경우 **MethodArgumentNotValidException이 발생** 한다
+* 따라서 아래와 같이 예외를 잡을 수 있다.
+```java
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<ResponseData> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    log.info("validation 예외 캐치");
+    String errorMessage = e.getBindingResult()
+            .getAllErrors()
+            .get(0)
+            .getDefaultMessage();
+    return new ResponseEntity<>(new ResponseData(errorMessage, null), HttpStatus.BAD_REQUEST);
+    }
+```

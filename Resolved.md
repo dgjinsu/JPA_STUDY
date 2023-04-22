@@ -174,7 +174,7 @@ public ResponseEntity<ResponseData> handleMethodArgumentNotValidException(Method
     }
 ```
 
-### 스웨거와 JWT 토큰 함께 쓰기
+### 스웨거와 JWT 토큰 함께 쓰기 (설정)
 ```java
 @Configuration
 @RequiredArgsConstructor

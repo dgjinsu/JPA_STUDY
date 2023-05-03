@@ -1,4 +1,4 @@
-## Spring Security 동장 방식
+## Spring Security 동작 방식
 ![image](https://user-images.githubusercontent.com/97269799/221396757-07763bbf-bf7e-40ed-a0fc-66470ca0efda.png)
 
 1. 사용자가 request 를 보낼 때 AuthenticationFilter가 받아 Token 생성

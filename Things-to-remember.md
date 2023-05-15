@@ -31,7 +31,7 @@
 ### @Enumerated
 
 * 자바 Enum 타입을 매핑할 때 사용
-* ORDINAL 타입을 사용하지 말자.
+* ORDINAL 타입을 사용하지 말자
     → enum타입이 추가,변경,삭제 되어 순서가 달라질 경우 사이드 이펙트가 생긴다
 * EnumType.ORDINAL: ENUM 순서를 데이터베이스에 저장
 * EnumType.STRING: ENUM 이름을 데이터베이스에 저장
